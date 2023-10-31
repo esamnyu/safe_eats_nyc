@@ -60,3 +60,4 @@ if __name__ == "__main__":
     file_path = "/Users/ethansam/Documents/GitHub/safe_eats_nyc/safe-eats/data/DOHMH_New_York_City_Restaurant_Inspection_Results-2.csv"
     table_name = "restaurant_inspections"
     main(file_path, table_name)
+ç

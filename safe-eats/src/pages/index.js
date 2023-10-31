@@ -1,22 +1,59 @@
-import React from 'react';
-import Link from 'next/link';
-import Navbar from '../components/Navbar';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const HomePage = () => {
+  const [dataFromBackend, setDataFromBackend] = useState(null);
+  const [content, setContent] = useState('');
+  const [highlights, setHighlights] = useState('');
+
+  useEffect(() => {
+    const fetchDataFromBackend = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/');
+        setDataFromBackend(response.data);
+      } catch (error) {
+        console.error('Error fetching data from backend: ', error);
+      }
+    };
+
+    const fetchHomePageData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/homepage');
+        setContent(response.data.content);
+        setHighlights(response.data.highlights);
+      } catch (error) {
+        console.error('Error fetching homepage data: ', error);
+      }
+    };
+
+    fetchDataFromBackend();
+    fetchHomePageData();
+  }, []);
+
   return (
     <div>
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold">Welcome to Safe Eats NYC</h1>
-        <p className="my-4">
-          Discover the food safety ratings of restaurants in New York City. Learn about common violations and how to ensure the food you are eating is safe.
-        </p>
-        <div className="my-4">
-          <Link href="/restaurants" passHref>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded block text-center">Search for Restaurants</button>
-          </Link>
+      <h1>Welcome to Safe Eats NYC</h1>
+      <p>Learn about food safety and explore restaurant inspection results.</p>
+
+      {/* Data from backend */}
+      {dataFromBackend ? (
+        <div>
+          <h2>Data from Backend:</h2>
+          <pre>{JSON.stringify(dataFromBackend, null, 2)}</pre>
         </div>
-      </div>
+      ) : (
+        <p>Loading data from backend...</p>
+      )}
+
+      {/* Educational Content and Highlights */}
+      <section>
+        <h2>Educational Content</h2>
+        <p>{content || 'Loading content...'}</p>
+      </section>
+      <section>
+        <h2>Common Inspection Issues</h2>
+        <p>{highlights || 'Loading highlights...'}</p>
+      </section>
     </div>
   );
 };

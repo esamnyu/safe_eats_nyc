@@ -1,36 +1,48 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
-const Violations = () => {
-  // Sample data for common violations and tips
-  const violationsData = [
-    {
-      id: 1,
-      violation: 'Improper food storage',
-      tip: 'Ensure that all food items are stored at the proper temperature and are properly sealed.',
-    },
-    {
-      id: 2,
-      violation: 'Unsanitary kitchen conditions',
-      tip: 'Regularly clean all kitchen surfaces and equipment to maintain a sanitary cooking environment.',
-    },
-    // Add more violations and tips as needed
-  ];
+const ViolationsPage = () => {
+  const [violations, setViolations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchViolations = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/violations');
+        setViolations(response.data.violations);
+      } catch (error) {
+        console.error('Error fetching violations from backend: ', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchViolations();
+  }, []);
 
   return (
-    <div className="container mx-auto my-8">
-      <h1 className="text-2xl font-bold mb-4">Common Violations and Tips</h1>
-      <p>Learn about common violations in NYC restaurants and tips on how to avoid them.</p>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {violationsData.map((violation) => (
-          <div key={violation.id} className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">{violation.violation}</h3>
-            <p>{violation.tip}</p>
-          </div>
-        ))}
-      </div>
+    <div>
+      <h1>Common Violations</h1>
+      <p>
+        Learn about common violations and how to comply with food safety
+        regulations.
+      </p>
+
+      {loading ? (
+        <p>Loading violations...</p>
+      ) : (
+        <ul>
+          {violations.length > 0 ? (
+            violations.map((violation) => (
+              <li key={violation.id}>{violation.name}</li>
+            ))
+          ) : (
+            <p>No violations found.</p>
+          )}
+        </ul>
+      )}
     </div>
   );
 };
 
-export default Violations;
+export default ViolationsPage;
