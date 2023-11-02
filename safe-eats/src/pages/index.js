@@ -1,24 +1,28 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import Search from '../components/Search';
 
 const HomePage = () => {
   const [dataFromBackend, setDataFromBackend] = useState(null);
   const [content, setContent] = useState('');
   const [highlights, setHighlights] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
+    // Fetch data from backend
     const fetchDataFromBackend = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/');
+        const response = await axios.get('http://localhost:3001/'); // Updated to correct backend port
         setDataFromBackend(response.data);
       } catch (error) {
         console.error('Error fetching data from backend: ', error);
       }
     };
 
+    // Fetch educational content and highlights
     const fetchHomePageData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/homepage');
+        const response = await axios.get('http://localhost:3001/homepage'); // Updated to correct backend port
         setContent(response.data.content);
         setHighlights(response.data.highlights);
       } catch (error) {
@@ -30,12 +34,31 @@ const HomePage = () => {
     fetchHomePageData();
   }, []);
 
+  const onResults = (newResults) => {
+    setSearchResults(newResults);
+  };
+
   return (
     <div>
       <h1>Welcome to Safe Eats NYC</h1>
       <p>Learn about food safety and explore restaurant inspection results.</p>
 
-      {/* Data from backend */}
+      {/* Search Component */}
+      <Search onResults={onResults} />
+
+      {/* Search Results */}
+      {searchResults.length > 0 && (
+        <section>
+          <h2>Search Results</h2>
+          <ul>
+            {searchResults.map((result, index) => (
+              <li key={index}>{result.dba}</li> // Updated to display the restaurant's name
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Data from Backend */}
       {dataFromBackend ? (
         <div>
           <h2>Data from Backend:</h2>

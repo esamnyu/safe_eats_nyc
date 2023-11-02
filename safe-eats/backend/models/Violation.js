@@ -1,40 +1,47 @@
-// backend/models/Violation.js
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../db');
-const Restaurant = require('./Restaurant.js'); // Make sure you have this file and model setup
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db'); // Ensure this path is correct
 
-const Violation = sequelize.define('violation', {
-  code: {
-    type: DataTypes.STRING,
-    allowNull: false
+
+const Violation = sequelize.define('Violation', {
+  inspectionDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: false
+  action: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  violationCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  violationDescription: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   criticalFlag: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
   },
   score: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: true,
   },
   grade: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
   },
   gradeDate: {
-    type: DataTypes.DATE,
-    allowNull: true
+    type: DataTypes.DATEONLY,
+    allowNull: true,
   },
   recordDate: {
-    type: DataTypes.DATE,
-    allowNull: false
+    type: DataTypes.DATEONLY,
+    allowNull: false,
   },
   inspectionType: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   }
 });
 

@@ -2,9 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { config } = require('dotenv');
 const sequelize = require('./db');
-const Violation = require('./models/Violation');// Make sure the path is correct
-require('./models/Restaurant');
-require('./models/Violation');
+const Violation = require('./models/Violation');
+const Restaurant = require('./models/Restaurant'); // Ensure this path is correct
 require('./models/associations');
 
 
@@ -35,12 +34,25 @@ app.get('/homepage', (req, res) => {
 });
 
 // Search for Restaurants Endpoint
-app.get('/search', (req, res) => {
+// Search for Restaurants Endpoint
+app.get('/search', async (req, res) => {
   const { query } = req.query;
-  // Use the query to search your database for restaurants
-  // Send the results as a response
-  res.json({ results: 'Search Results' });
+  try {
+    // Use the query to search your database for restaurants
+    const results = await Restaurant.findAll({
+      where: {
+        dba: sequelize.where(sequelize.fn('LOWER', sequelize.col('dba')), 'LIKE', '%' + query.toLowerCase() + '%')
+      },
+      limit: 10 // Limit the results to 10
+    });
+    // Send the results as a response
+    res.json({ results });
+  } catch (error) {
+    console.error('Error searching for restaurants:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
+
 
 // Violations Page Endpoint
 app.get('/violations', async (req, res) => {
@@ -59,7 +71,7 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // changed from 3000 to 3001
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

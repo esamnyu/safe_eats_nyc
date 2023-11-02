@@ -8,7 +8,7 @@ const ViolationsPage = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/violations');
+        const response = await axios.get('http://localhost:3001/violations');
         setViolations(response.data.violations);
       } catch (error) {
         console.error('Error fetching violations from backend: ', error);
