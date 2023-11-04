@@ -1,18 +1,20 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Search from '../components/Search';
+import RestaurantCard from '../components/RestaurantCard'; // Correct path assuming index.js is in the pages directory
 
 const HomePage = () => {
   const [dataFromBackend, setDataFromBackend] = useState(null);
   const [content, setContent] = useState('');
   const [highlights, setHighlights] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [uniqueSearchResults, setUniqueSearchResults] = useState([]);
 
   useEffect(() => {
     // Fetch data from backend
     const fetchDataFromBackend = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/'); // Updated to correct backend port
+        const response = await axios.get('http://localhost:3001/');
         setDataFromBackend(response.data);
       } catch (error) {
         console.error('Error fetching data from backend: ', error);
@@ -22,7 +24,7 @@ const HomePage = () => {
     // Fetch educational content and highlights
     const fetchHomePageData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/homepage'); // Updated to correct backend port
+        const response = await axios.get('http://localhost:3001/homepage');
         setContent(response.data.content);
         setHighlights(response.data.highlights);
       } catch (error) {
@@ -35,7 +37,16 @@ const HomePage = () => {
   }, []);
 
   const onResults = (newResults) => {
-    setSearchResults(newResults);
+    // Filter out duplicates based on 'camis' and update the state
+    const uniqueResults = newResults.reduce((acc, current) => {
+      const x = acc.find(item => item.camis === current.camis);
+      if (!x) {
+        return acc.concat([current]);
+      } else {
+        return acc;
+      }
+    }, []);
+    setUniqueSearchResults(uniqueResults);
   };
 
   return (
@@ -47,14 +58,15 @@ const HomePage = () => {
       <Search onResults={onResults} />
 
       {/* Search Results */}
-      {searchResults.length > 0 && (
+      {uniqueSearchResults.length > 0 && (
         <section>
           <h2>Search Results</h2>
-          <ul>
-            {searchResults.map((result, index) => (
-              <li key={index}>{result.dba}</li> // Updated to display the restaurant's name
-            ))}
-          </ul>
+              <div className="cards-container">
+                {uniqueSearchResults.map((result) => (
+                  <RestaurantCard key={result.camis} restaurant={result} />
+                ))}
+              </div>
+
         </section>
       )}
 

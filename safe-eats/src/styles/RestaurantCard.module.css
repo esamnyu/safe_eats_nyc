@@ -1,0 +1,54 @@
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 16px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    margin: 16px;
+    flex: 0 1 calc(25% - 32px);  /* 4 cards per row */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.card p {
+    margin: 4px 0;
+    color: #666;
+}
+
+.card .grade {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.card .grade.NA {
+    color: #f44336;
+}
+
+@media (max-width: 768px) {
+    .card {
+        flex: 0 1 calc(33.333% - 32px);  /* 3 cards per row for tablets */
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        flex: 0 1 100%;  /* 1 card per row for mobile */
+        margin: 16px 0;
+    }
+}
