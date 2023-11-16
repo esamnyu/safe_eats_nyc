@@ -1,93 +1,99 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Search from '../components/Search';
-import RestaurantCard from '../components/RestaurantCard'; // Correct path assuming index.js is in the pages directory
+import RestaurantCard from '../components/RestaurantCard';
+// import dynamic from 'next/dynamic';  // Import dynamic from 'next/dynamic'
+import styles from '../styles/RestaurantCard.module.css';
+
+// Dynamically import MapView with SSR disabled
+// const MapView = dynamic(() => import('../components/MapView'), { ssr: false });
 
 const HomePage = () => {
   const [dataFromBackend, setDataFromBackend] = useState(null);
   const [content, setContent] = useState('');
   const [highlights, setHighlights] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [uniqueSearchResults, setUniqueSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch data from backend
-    const fetchDataFromBackend = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:3001/');
-        setDataFromBackend(response.data);
+        const [backendData, homePageData] = await Promise.all([
+          axios.get('http://localhost:3001/'),
+          axios.get('http://localhost:3001/homepage')
+        ]);
+        setDataFromBackend(backendData.data);
+        setContent(homePageData.data.content);
+        setHighlights(homePageData.data.highlights);
       } catch (error) {
-        console.error('Error fetching data from backend: ', error);
+        setError('Error fetching data. Please try again later.');
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // Fetch educational content and highlights
-    const fetchHomePageData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/homepage');
-        setContent(response.data.content);
-        setHighlights(response.data.highlights);
-      } catch (error) {
-        console.error('Error fetching homepage data: ', error);
-      }
-    };
-
-    fetchDataFromBackend();
-    fetchHomePageData();
+    fetchData();
   }, []);
 
   const onResults = (newResults) => {
-    // Filter out duplicates based on 'camis' and update the state
     const uniqueResults = newResults.reduce((acc, current) => {
-      const x = acc.find(item => item.camis === current.camis);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
+      if (!acc.some(item => item.camis === current.camis)) {
+        acc.push(current);
       }
+      return acc;
     }, []);
-    setUniqueSearchResults(uniqueResults);
+    setSearchResults(uniqueResults);
   };
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <div>
       <h1>Welcome to Safe Eats NYC</h1>
       <p>Learn about food safety and explore restaurant inspection results.</p>
 
-      {/* Search Component */}
       <Search onResults={onResults} />
 
-      {/* Search Results */}
-      {uniqueSearchResults.length > 0 && (
-        <section>
-          <h2>Search Results</h2>
-              <div className="cards-container">
-                {uniqueSearchResults.map((result) => (
-                  <RestaurantCard key={result.camis} restaurant={result} />
-                ))}
-              </div>
+      {searchResults.length > 0 && (
+        <>
+          <section>
+            <h2>Search Results</h2>
+            <div className={styles.cardsContainer}>
+              {searchResults.map((result) => (
+                <RestaurantCard key={result.camis} restaurant={result} />
+              ))}
+            </div>
+          </section>
 
-        </section>
+          {/* MapView Component */}
+          <section>
+            {/* <MapView restaurants={searchResults} /> */}
+          </section>
+        </>
       )}
 
-      {/* Data from Backend */}
-      {dataFromBackend ? (
-        <div>
-          <h2>Data from Backend:</h2>
-          <pre>{JSON.stringify(dataFromBackend, null, 2)}</pre>
-        </div>
-      ) : (
-        <p>Loading data from backend...</p>
-      )}
+      <section>
+        <h2>Data from Backend:</h2>
+        <pre>{JSON.stringify(dataFromBackend, null, 2)}</pre>
+      </section>
 
-      {/* Educational Content and Highlights */}
       <section>
         <h2>Educational Content</h2>
-        <p>{content || 'Loading content...'}</p>
+        <p>{content}</p>
       </section>
+
       <section>
         <h2>Common Inspection Issues</h2>
-        <p>{highlights || 'Loading highlights...'}</p>
+        <p>{highlights}</p>
       </section>
     </div>
   );
