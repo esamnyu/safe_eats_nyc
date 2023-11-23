@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import styles from '../styles/RestaurantCard.module.css';
 
 const Login = ({ setToken }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });

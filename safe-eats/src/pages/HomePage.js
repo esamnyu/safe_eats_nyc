@@ -1,9 +1,9 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Search from '../components/Search';
 import RestaurantCard from '../components/RestaurantCard';
-// import dynamic from 'next/dynamic';  // Import dynamic from 'next/dynamic'
 import styles from '../styles/RestaurantCard.module.css';
+import { useRouter } from 'next/router'; // Import useRouter from Next.js
 
 // Dynamically import MapView with SSR disabled
 // const MapView = dynamic(() => import('../components/MapView'), { ssr: false });
@@ -15,6 +15,8 @@ const HomePage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const router = useRouter(); // Initialize the Next.js router
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +50,11 @@ const HomePage = () => {
     setSearchResults(uniqueResults);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/Login'); // Replace '/login' with the path to your login page if different
+  };
+
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -58,6 +65,7 @@ const HomePage = () => {
 
   return (
     <div>
+      <button onClick={handleLogout}>Logout</button> {/* Logout button */}
       <h1>Welcome to Safe Eats NYC</h1>
       <p>Learn about food safety and explore restaurant inspection results.</p>
 
@@ -74,6 +82,10 @@ const HomePage = () => {
             </div>
           </section>
 
+          {/* MapView Component */}
+          {/* <section>
+            <MapView restaurants={searchResults} />
+          </section> */}
         </>
       )}
 
