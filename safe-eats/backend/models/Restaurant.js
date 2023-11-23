@@ -1,5 +1,5 @@
 const { Sequelize, Model, DataTypes } = require('sequelize');
-const sequelize = require('../db'); // Ensure this path is correct
+const sequelize = require('../db') // Ensure this path is correct
 
 class Restaurant extends Model {}
 
