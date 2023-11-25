@@ -1,15 +1,15 @@
-const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../db'); // Adjust the path to your sequelize instance
+const { Sequelize, Model, DataTypes } = require('sequelize');
+const sequelize = require('../db') // Ensure this path is correct
 
 class Subscription extends Model {}
 
 Subscription.init({
-    subscriptionID: {
+    subscriptionid: { // Previously subscriptionID
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    userID: {
+    userid: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -17,15 +17,16 @@ Subscription.init({
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    subscriptionDate: {
+    subscriptiondate: { // Make sure this matches the exact column name in DB
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
     }
 }, {
     sequelize,
     modelName: 'Subscription',
-    timestamps: false,
-    tableName: 'Subscriptions' // Ensure this matches the table name in your database
+    tableName: 'subscriptions', // Make sure this is the exact table name in DB
+    timestamps: false
 });
+
 
 module.exports = Subscription;

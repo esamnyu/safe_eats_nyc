@@ -18,6 +18,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Define authenticateToken middleware here
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        console.log("User object in middleware:", user); // Debugging line
+        req.user = user; // user now contains userid
+        next();
+    });
+};
+
 sequelize.authenticate().then(() => {
     console.log('Connection has been established successfully.');
 }).catch(err => {
@@ -72,29 +87,44 @@ app.get('/violations', async (req, res) => {
     }
 });
 
+
+
 // Subscribe to a restaurant
-app.post('/subscribe', async (req, res) => {
-    const { userId, camis } = req.body;
-    
+app.post('/subscribe', authenticateToken, async (req, res) => {
+    console.log("Request body:", req.body); // Log the request body
+    console.log("User from token:", req.user); // Log the user extracted from the JWT token
+
+    const { camis } = req.body;
+    const userid = req.user.userid; // Make sure this matches the model field name
+
+    console.log("Extracted userid:", userid); // Log the userid extracted from req.user
+    console.log("CAMIS from request:", camis); // Log the camis sent with the request
+
     try {
-      await Subscription.create({ userId, camis });
-      res.status(200).send('Subscription created successfully.');
+        const subscription = await Subscription.create({ userid, camis });
+        console.log("Created subscription:", subscription); // Log the created subscription object
+        res.status(200).send('Subscription created successfully.');
     } catch (error) {
-      console.error('Error creating subscription:', error);
-      res.status(500).send('Error creating subscription.');
+        console.error('Error creating subscription:', error);
+        console.log('Detailed error:', error); // Log the detailed error
+        res.status(500).send('Error creating subscription.');
     }
-  });
+});
+
+
+
+
 
 app.get('/', (req, res) => {
     res.send('Safe Eats NYC Backend is running!');
 });
 // Fetch user alerts
 app.get('/user-alerts', async (req, res) => {
-    const userId = req.query.userId; // Adjust based on how you're getting user ID
+    const userid = req.query.userid; // Adjust based on how you're getting user ID
   
     try {
       const alerts = await Alert.findAll({
-        where: { userId }
+        where: { userid }
       });
       res.status(200).json(alerts);
     } catch (error) {
@@ -116,7 +146,7 @@ app.post('/trigger-alert', async (req, res) => {
       // Create an alert for each subscribed user
       for (const subscription of subscriptions) {
         await Alert.create({
-          userId: subscription.userId,
+          userid: subscription.userid,
           camis,
           oldGrade,
           newGrade
@@ -130,17 +160,11 @@ app.post('/trigger-alert', async (req, res) => {
     }
   });
 
-  const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.sendStatus(401);
+    
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-};
+// Fetch user subscriptions
+
+
 
 app.get('/protected-route', authenticateToken, (req, res) => {
     // Access user from req.user
@@ -154,7 +178,7 @@ app.post('/register', async (req, res) => {
         const { username, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({ username, email, password: hashedPassword });
-        res.status(201).json({ message: 'User created successfully', userId: user.id });
+        res.status(201).json({ message: 'User created successfully', userid: user.userid });
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).send('Error during registration.');
@@ -168,13 +192,15 @@ app.post('/login', async (req, res) => {
         if (!user || !await bcrypt.compare(password, user.password)) {
             return res.status(401).send('Invalid credentials.');
         }
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userid: user.userid }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).send('Error during login.');
     }
 });
+
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
